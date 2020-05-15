@@ -1,9 +1,12 @@
 {
-  "name": "extract-zip",
+  "name": "@egoist/extract-zip",
   "version": "2.0.0",
   "description": "unzip a zip file into a directory using 100% javascript",
   "main": "index.js",
   "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "extract-zip": "cli.js"
   },

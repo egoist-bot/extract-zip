@@ -11,19 +11,19 @@ const openZip = promisify(yauzl.open)
 const pipeline = promisify(stream.pipeline)
 
 class Extractor {
-  constructor (zipPath, opts) {
+  constructor(zipPath, opts) {
     this.zipPath = zipPath
     this.opts = opts
   }
 
-  async extract () {
+  async extract() {
     debug('opening', this.zipPath, 'with opts', this.opts)
 
     this.zipfile = await openZip(this.zipPath, { lazyEntries: true })
     this.canceled = false
 
     return new Promise((resolve, reject) => {
-      this.zipfile.on('error', err => {
+      this.zipfile.on('error', (err) => {
         this.canceled = true
         reject(err)
       })
@@ -36,7 +36,7 @@ class Extractor {
         }
       })
 
-      this.zipfile.on('entry', async entry => {
+      this.zipfile.on('entry', async (entry) => {
         /* istanbul ignore if */
         if (this.canceled) {
           debug('skipping entry', entry.fileName, { cancelled: this.canceled })
@@ -59,7 +59,9 @@ class Extractor {
           const relativeDestDir = path.relative(this.opts.dir, canonicalDestDir)
 
           if (relativeDestDir.split(path.sep).includes('..')) {
-            throw new Error(`Out of bound path "${canonicalDestDir}" found while processing file ${entry.fileName}`)
+            throw new Error(
+              `Out of bound path "${canonicalDestDir}" found while processing file ${entry.fileName}`
+            )
           }
 
           await this.extractEntry(entry)
@@ -74,10 +76,12 @@ class Extractor {
     })
   }
 
-  async extractEntry (entry) {
+  async extractEntry(entry) {
     /* istanbul ignore if */
     if (this.canceled) {
-      debug('skipping entry extraction', entry.fileName, { cancelled: this.canceled })
+      debug('skipping entry extraction', entry.fileName, {
+        cancelled: this.canceled,
+      })
       return
     }
 
@@ -85,10 +89,15 @@ class Extractor {
       this.opts.onEntry(entry, this.zipfile)
     }
 
-    const dest = path.join(this.opts.dir, entry.fileName)
+    const strip = opts.strip || 0
+    const filenameParts = entry.fileName.split('/')
+    filenameParts = filenameParts.slice(
+      Math.min(strip, filenameParts.length - 1)
+    )
+    const dest = path.join(opts.dir, ...filenameParts)
 
     // convert external file attr int into a fs stat mode int
-    const mode = (entry.externalFileAttributes >> 16) & 0xFFFF
+    const mode = (entry.externalFileAttributes >> 16) & 0xffff
     // check if it's a symlink or dir (using stat mode constants)
     const IFMT = 61440
     const IFDIR = 16384
@@ -104,9 +113,13 @@ class Extractor {
     // check for windows weird way of specifying a directory
     // https://github.com/maxogden/extract-zip/issues/13#issuecomment-154494566
     const madeBy = entry.versionMadeBy >> 8
-    if (!isDir) isDir = (madeBy === 0 && entry.externalFileAttributes === 16)
+    if (!isDir) isDir = madeBy === 0 && entry.externalFileAttributes === 16
 
-    debug('extracting entry', { filename: entry.fileName, isDir: isDir, isSymlink: symlink })
+    debug('extracting entry', {
+      filename: entry.fileName,
+      isDir: isDir,
+      isSymlink: symlink,
+    })
 
     // reverse umask first (~)
     const umask = ~process.umask()
@@ -125,7 +138,9 @@ class Extractor {
     if (isDir) return
 
     debug('opening read stream', dest)
-    const readStream = await promisify(this.zipfile.openReadStream.bind(this.zipfile))(entry)
+    const readStream = await promisify(
+      this.zipfile.openReadStream.bind(this.zipfile)
+    )(entry)
 
     if (symlink) {
       const link = await getStream(readStream)
@@ -136,7 +151,7 @@ class Extractor {
     }
   }
 
-  getExtractedMode (entryMode, isDir) {
+  getExtractedMode(entryMode, isDir) {
     let mode = entryMode
     // Set defaults, if necessary
     if (mode === 0) {

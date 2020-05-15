@@ -45,6 +45,7 @@ async main () {
 - `defaultDirMode` - integer - Directory Mode (permissions), defaults to `0o755`
 - `defaultFileMode` - integer - File Mode (permissions), defaults to `0o644`
 - `onEntry` - function - if present, will be called with `(entry, zipfile)`, entry is every entry from the zip file forwarded from the `entry` event from yauzl. `zipfile` is the `yauzl` instance
+- `strip` - integer - number of leading directory components to remove from extracted files, defaults to `0`
 
 Default modes are only used if no permissions are set in the zip file.
 
