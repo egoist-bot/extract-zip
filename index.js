@@ -60,7 +60,7 @@ class Extractor {
 
           if (relativeDestDir.split(path.sep).includes('..')) {
             throw new Error(
-              `Out of bound path "${canonicalDestDir}" found while processing file ${entry.fileName}`
+              `Out of bound path "${canonicalDestDir}" found while processing file ${entry.fileName}`,
             )
           }
 
@@ -90,9 +90,9 @@ class Extractor {
     }
 
     const strip = this.opts.strip || 0
-    const filenameParts = entry.fileName.split('/')
+    let filenameParts = entry.fileName.split('/')
     filenameParts = filenameParts.slice(
-      Math.min(strip, filenameParts.length - 1)
+      Math.min(strip, filenameParts.length - 1),
     )
     const dest = path.join(this.opts.dir, ...filenameParts)
 
@@ -139,7 +139,7 @@ class Extractor {
 
     debug('opening read stream', dest)
     const readStream = await promisify(
-      this.zipfile.openReadStream.bind(this.zipfile)
+      this.zipfile.openReadStream.bind(this.zipfile),
     )(entry)
 
     if (symlink) {
