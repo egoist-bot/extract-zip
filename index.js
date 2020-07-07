@@ -89,12 +89,12 @@ class Extractor {
       this.opts.onEntry(entry, this.zipfile)
     }
 
-    const strip = opts.strip || 0
+    const strip = this.opts.strip || 0
     const filenameParts = entry.fileName.split('/')
     filenameParts = filenameParts.slice(
       Math.min(strip, filenameParts.length - 1)
     )
-    const dest = path.join(opts.dir, ...filenameParts)
+    const dest = path.join(this.opts.dir, ...filenameParts)
 
     // convert external file attr int into a fs stat mode int
     const mode = (entry.externalFileAttributes >> 16) & 0xffff
